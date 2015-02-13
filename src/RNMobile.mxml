@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" splashScreenImage="@Embed('Default-568h@2x.png')" splashScreenScaleMode="zoom"
+							xmlns:s="library://ns.adobe.com/flex/spark" firstView="views.Home" applicationDPI="320">
+	
+	<fx:Style>
+		
+		@namespace s "library://ns.adobe.com/flex/spark";
+		
+		@font-face { 
+			src: url("fonts/FiraSans-Regular.otf"); 
+			fontFamily: Fira; 
+			embedAsCFF: true;
+		}
+		
+		@font-face { 
+			src: url("fonts/FiraSans-Italic.otf");
+			fontFamily: FiraItalic; 
+			embedAsCFF: true;
+		}
+		
+		s|Application {
+			fontFamily: Fira;
+		}
+		
+		@media (application-dpi: 320) AND (os-platform:"IOS") AND (min-os-version: 7) 
+		{ 
+			s|Application { 
+				osStatusBarHeight: 0;
+			}
+		}
+		
+		s|TextInput
+		{
+			skinClass: ClassReference("spark.skins.mobile.TextInputSkin");
+			/* 
+			- http://stackoverflow.com/questions/10913156/flex-4-6-textinput-with-prompt-on-ios-misbehaves
+			- iOS fix for the autoselection of text
+			*/
+			showPromptWhenFocused: false; 
+			
+			borderVisible: false;
+			contentBackgroundColor: #FFFFFF;
+			focusAlpha: 0;
+			focusColor: #FFFFFF;
+		}
+		
+		s|TextArea
+		{
+			skinClass: ClassReference("spark.skins.mobile.TextAreaSkin");
+			/* 
+			- http://stackoverflow.com/questions/10913156/flex-4-6-textinput-with-prompt-on-ios-misbehaves
+			- iOS fix for the autoselection of text
+			*/
+			showPromptWhenFocused: false; 
+			
+			borderVisible: false;
+			contentBackgroundColor: #FFFFFF;
+			focusAlpha: 0;
+			focusColor: #FFFFFF;
+		}
+		
+		.title {
+			font-size: 40;
+			color: #000000;
+		}
+		
+		.desc {
+			font-size: 32;
+			color: #8E8E93;
+		}
+		
+	</fx:Style>
+	
+</s:ViewNavigatorApplication>

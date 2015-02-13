@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mq="com.mapquest.tilemap.*" creationComplete="view1_creationCompleteHandler(event)"
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Home" actionBarVisible="false">
+	<fx:Script>
+		<![CDATA[
+			import com.mapquest.tilemap.pois.ImageMapIcon;
+			import com.mapquest.tilemap.pois.Poi;
+			import com.mapquest.LatLng;
+			
+			import flash.sensors.Geolocation;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.CrossFadeViewTransition;
+			
+			import air.net.URLMonitor;
+			
+			[Embed(source="../res/map.png")]
+			[Bindable]
+			public var imgMap:Class;
+			
+			[Embed(source="../res/previous.png")]
+			[Bindable]
+			public var imgPrevious:Class;
+			
+			[Embed(source="../res/you.png")]
+			[Bindable]
+			public var imgYou:Class;
+			
+			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
+			
+			private var geo:Geolocation;
+			
+			private var lat:String;
+			private var long:String;
+			
+			private var urlMonitor:URLMonitor;
+			
+			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/resSchools.xml";
+			
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
+					hGroupActionBarContents.paddingTop = 40;
+				} else {
+					hGroupActionBarContents.paddingTop = 0;
+				}
+				
+				if (Geolocation.isSupported) { 
+					geo = new Geolocation(); 
+					if (!geo.muted) { 
+						geo.addEventListener(GeolocationEvent.UPDATE, geoUpdateHandler); 
+					} 
+					geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
+				} else { 
+					mqMap.setCenter(new LatLng(57.846292, -98.796020)); // LMX
+				}
+				
+				var urlRequest:URLRequest = new URLRequest("http://www.bryanabsmith.com");
+				urlMonitor = new URLMonitor(urlRequest);
+				urlMonitor.addEventListener(StatusEvent.STATUS, onStatusEvent);
+				urlMonitor.start();
+			}
+			
+			private function onStatusEvent(event:StatusEvent):void
+			{
+				var evt:StatusEvent = event;
+				if (evt.code == "Service.available") {
+					/*groupNetworkError.visible = false;
+					groupNetworkError.includeInLayout = false;
+					mainScroller.enabled = true;*/
+					
+					var myLoader:URLLoader = new URLLoader();
+					myLoader.addEventListener(Event.COMPLETE, showSchools);
+					myLoader.load(new URLRequest(url));
+				} else {
+					/*groupNetworkError.visible = true;
+					groupNetworkError.includeInLayout = true;
+					mainScroller.enabled = false;*/
+				}
+			}
+			
+			protected function showSchools(event:Event):void
+			{
+				var fileContents:XML = new XML(event.currentTarget.data);
+				
+				for (var item:String in fileContents.school) {
+					var schoolPoint:Poi = new Poi(new LatLng(Number(fileContents.school.@lat[item]), Number(fileContents.school.@long[item])));
+					schoolPoint.rolloverAndInfoTitleText = fileContents.school.@name[item];
+					schoolPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
+					mqMap.addShape(schoolPoint);
+				}
+				loadingRes.visible = false;
+			}
+			
+			public function geoUpdateHandler(event:GeolocationEvent):void 
+			{ 
+				lat = event.latitude.toString();
+				long = event.longitude.toString();
+				mqMap.setCenter(new LatLng(Number(lat), Number(long)));
+				
+				var youIcon:ImageMapIcon = new ImageMapIcon();
+				youIcon.setImage(new imgYou(), 22, 22);
+				var youPoint:Poi = new Poi(new LatLng(Number(lat), Number(long)), youIcon);
+				youPoint.rolloverAndInfoTitleText = "Your Location";
+				//youPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
+				mqMap.addShape(youPoint);
+				
+				geo.removeEventListener(GeolocationEvent.UPDATE, geoUpdateHandler);
+			}
+			
+			public function geoStatusHandler(event:StatusEvent):void 
+			{ 
+				if (geo.muted)
+					geo.removeEventListener(GeolocationEvent.UPDATE, geoUpdateHandler);
+				else
+					geo.addEventListener(GeolocationEvent.UPDATE, geoStatusHandler);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="vGroupMain" height="100%" width="100%" gap="0">
+		<s:Group id="groupActionBarTitle" width="100%">
+			<s:Rect width="100%" height="100%">
+				<s:fill><s:SolidColor id="backgroundActionBarTitle" color="#F9F9F9"/></s:fill>
+			</s:Rect>
+			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
+				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 30}" width="{labelActionBarTitle.height - 30}" click="navigator.popView(crossFade);"/>
+				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Map" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
+				<s:Spacer width="100%"/>
+				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
+			</s:HGroup>
+		</s:Group>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="0xB1B1B1" weight="2"/>
+			</s:stroke>
+		</s:Line>
+		
+		<!-- http://help.adobe.com/en_US/flex/using/WS422719A4-7849-4921-AF39-57FF567B483B.html#WS063B0491-B7AB-4b00-A39F-E44310BCB0E0 -->
+		<!--<s:SkinnableContainer id="backgroundContainer" height="100%" width="100%" skinClass="skins.BackPic">-->
+		
+		<s:VGroup id="vGroupBackground" width="100%" height="100%" gap="0">
+			
+			<s:Group id="groupBackground" width="100%" height="100%">
+				
+				<s:Rect width="100%" height="100%">
+					<s:fill><s:SolidColor id="backgroundActionBarColour" color="#F7F7F7"/></s:fill>
+				</s:Rect>
+				
+				<s:Scroller id="mainScroller" width="100%" height="100%">
+					
+					<s:VGroup id="vGroupContent" height="100%" width="100%" gap="0">
+						
+						<mq:TilemapComponent id="mqMap" x="0" y="0" key="Fmjtd%7Cluur2d6ynd%2Crg%3Do5-9abghf" zoom="3" width="100%" height="100%"/>
+						
+					</s:VGroup>	
+					
+				</s:Scroller>
+				
+			</s:Group>
+			
+		</s:VGroup>
+		<!--</s:SkinnableContainer>-->		
+	</s:VGroup>
+	
+</s:View>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="view1_creationCompleteHandler(event)"
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Home" actionBarVisible="false">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.CrossFadeViewTransition;
+			
+			import air.net.URLMonitor;
+			
+			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
+			
+			private var urlMonitor:URLMonitor;
+			
+			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/resHistory.xml";
+			
+			[Embed(source="../res/previous.png")]
+			[Bindable]
+			public var imgPrevious:Class;
+			
+			[Embed(source="../res/source.png")]
+			[Bindable]
+			public var imgSource:Class;
+			
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
+					hGroupActionBarContents.paddingTop = 40;
+				} else {
+					hGroupActionBarContents.paddingTop = 0;
+				}
+				labelActionBarTitle.text = data[2];
+				labelReference.text = "Source: " + data[0];
+				labelReference.addEventListener(MouseEvent.CLICK, openSource);
+				
+				imagePicture.source = data[1];
+				loadingRes.visible = false;
+				loadingRes.includeInLayout = false;
+				
+				// http://www.republicofcode.com/tutorials/flash/as3pinchzoom/
+				Multitouch.inputMode = MultitouchInputMode.GESTURE;
+				
+				vGroupContent.addEventListener(TransformGestureEvent.GESTURE_ZOOM, onZoom); 
+				function onZoom (e:TransformGestureEvent):void {
+					vGroupContent.scaleX *= e.scaleX;
+					vGroupContent.scaleY *= e.scaleY; 
+				}
+			}
+			
+			private function openSource(e:MouseEvent):void {
+				navigateToURL(new URLRequest(data[0]));
+			}
+			
+			protected function imageSource_clickHandler(event:MouseEvent):void
+			{
+				if (groupReference.visible == false) {
+					groupReference.visible = true;
+					groupReference.includeInLayout = true;
+				} else {
+					groupReference.visible = false;
+					groupReference.includeInLayout = false;
+				}
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="vGroupMain" height="100%" width="100%" gap="0">
+		<s:Group id="groupActionBarTitle" width="100%">
+			<s:Rect width="100%" height="100%">
+				<s:fill><s:SolidColor id="backgroundActionBarTitle" color="#F9F9F9"/></s:fill>
+			</s:Rect>
+			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
+				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 30}" width="{labelActionBarTitle.height - 30}" click="navigator.popView(crossFade);"/>
+				<s:Label id="labelActionBarTitle" height="100%" width="100%" maxDisplayedLines="1" text="" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
+				<s:Spacer width="100%"/>
+				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF" visible="false" includeInLayout="false"/>
+				<s:Image id="imageSource" source="{imgSource}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 25}" width="{labelActionBarTitle.height - 25}" click="imageSource_clickHandler(event)"/>
+			</s:HGroup>
+		</s:Group>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="0xB1B1B1" weight="2"/>
+			</s:stroke>
+		</s:Line>
+		
+		<!-- http://help.adobe.com/en_US/flex/using/WS422719A4-7849-4921-AF39-57FF567B483B.html#WS063B0491-B7AB-4b00-A39F-E44310BCB0E0 -->
+		<!--<s:SkinnableContainer id="backgroundContainer" height="100%" width="100%" skinClass="skins.BackPic">-->
+		
+		<s:VGroup id="vGroupBackground" width="100%" height="100%" gap="0">
+			
+			<s:Group id="groupBackground" width="100%" height="100%">
+				
+				<s:Rect width="100%" height="100%">
+					<s:fill><s:SolidColor id="backgroundMainColour" color="#E8E8E8"/></s:fill>
+				</s:Rect>
+				
+				<s:Scroller id="mainScroller" width="100%" height="100%">
+					
+					<s:VGroup id="vGroupContent" height="100%" width="100%" gap="0" paddingRight="20" paddingLeft="20" paddingTop="20" paddingBottom="20">
+						
+						<s:Image id="imagePicture" source="" smooth="true" smoothingQuality="high"/>
+						
+					</s:VGroup>	
+					
+				</s:Scroller>
+				
+				<s:Group id="groupReference" width="100%" visible="false" includeInLayout="false" depth="2">
+					<s:Rect width="100%" height="100%">
+						<s:fill><s:SolidColor id="backgroundReference" color="#000000" alpha="0.85"/></s:fill>
+					</s:Rect>
+					<s:HGroup id="hGroupReference" width="100%" verticalAlign="middle" paddingLeft="10" paddingRight="10">
+						<s:Label id="labelReference" width="100%" text="" color="#FFFFFF" styleName="title" paddingTop="20" paddingBottom="20" paddingRight="10"/>
+					</s:HGroup>
+				</s:Group>
+				
+			</s:Group>
+			
+		</s:VGroup>
+		<!--</s:SkinnableContainer>-->		
+	</s:VGroup>
+	
+</s:View>
