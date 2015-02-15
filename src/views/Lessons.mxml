@@ -140,8 +140,8 @@
 					groupPicturesCard.toolTip = pURL;
 					groupPicturesCard.id = pAuthor;
 					
-					//title.addEventListener(MouseEvent.CLICK, onClickPictures);
-					//source.addEventListener(MouseEvent.CLICK, onClickPictures);
+					title.addEventListener(MouseEvent.CLICK, onClickLesson);
+					source.addEventListener(MouseEvent.CLICK, onClickLesson);
 					
 					vGroupContent.addElement(bottomSpacer);
 					count++;
@@ -152,12 +152,12 @@
 			}
 			
 			// http://stackoverflow.com/a/14762479/2363223
-			/*protected function onClickPictures(e:MouseEvent):void {
+			protected function onClickLesson(e:MouseEvent):void {
 				if (e.target is Label) {
-					var pictures:Label = e.target as Label;
-					navigator.pushView(PictureViewer, [pictures.toolTip, pictures.id, pictures.name]);
+					var lesson:Label = e.target as Label;
+					navigator.pushView(LessonViewer, [lesson.toolTip]);
 				}
-			}*/
+			}
 		]]>
 	</fx:Script>
 	

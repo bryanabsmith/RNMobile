@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="view1_creationCompleteHandler(event)"
-		xmlns:s="library://ns.adobe.com/flex/spark" title="Home" actionBarVisible="false">
+		xmlns:s="library://ns.adobe.com/flex/spark" name="Home" actionBarVisible="false">
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexEvent;
@@ -13,7 +13,7 @@
 			
 			private var urlMonitor:URLMonitor;
 			
-			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/resHistory.xml";
+			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/resOralHistories.xml";
 			
 			[Embed(source="../res/previous.png")]
 			[Bindable]
@@ -55,31 +55,120 @@
 			{
 				var fileContents:XML = new XML(event.currentTarget.data);
 				
-				for (var item:String in fileContents.para) {
-					labelHistory.text += "	" + fileContents.para.@content[item] + "\n";
-				}
+				var count:int = 0;
 				
-				for (var item2:String in fileContents.ref) {
-					if (Number(item2) == fileContents.ref.length()-1) {
-						labelReferences.text += fileContents.ref.@content[item2] + "\n";
-					} else {
-						labelReferences.text += fileContents.ref.@content[item2] + "\n\n";
-					}
+				var pName:String = "";
+				var pImage:String = "";
+				var pURL:String = "";
+				
+				for (var item:String in fileContents.vid) {
+					pName = fileContents.vid.@name[item];
+					pImage = fileContents.vid.@imageSrc[item];
+					pURL = fileContents.vid.@url[item];
+					
+					var groupPicturesCard:Group = new Group();
+					var picturesRect:Rect = new Rect();
+					var picturesStrokeColour:SolidColorStroke = new SolidColorStroke();
+					var picturesFill:SolidColor = new SolidColor();
+					var picturesLineColour:SolidColorStroke = new SolidColorStroke();
+					var picturesLine:Line = new Line();
+					//var vGroupPictures:VGroup = new VGroup();
+					//var vGroupInfo:VGroup = new VGroup();
+					var hGroupMain:HGroup = new HGroup();
+					var imageOH:Image = new Image();
+					var bottomSpacer:Spacer = new Spacer();
+					
+					var name:Label = new Label();
+					var source:Label = new Label();
+					
+					groupPicturesCard.percentWidth = 100;
+					//groupBookCard.percentHeight = 10;
+					
+					picturesRect.percentWidth = 100;
+					picturesRect.percentHeight = 100;							
+					
+					picturesStrokeColour.color = 0xFFFFFF;
+					picturesStrokeColour.weight = 2;
+					picturesRect.stroke = picturesStrokeColour;
+					
+					picturesFill.color = 0xFFFFFF;
+					picturesRect.fill = picturesFill;
+					
+					groupPicturesCard.addElement(picturesRect);
+					
+					picturesLine.percentWidth = 100;
+					picturesLineColour.color = 0xB0B0B0;
+					picturesLineColour.weight = 2;
+					picturesLine.stroke = picturesLineColour;
+					
+					hGroupMain.percentWidth = 100;
+
+					
+					name.text = pName;
+					name.percentWidth = 100;
+					name.setStyle("styleName", "title");
+					name.toolTip = pURL;
+					name.setStyle("paddingTop", "10");
+					name.percentHeight = 100;
+					name.setStyle("verticalAlign", "middle");
+					name.setStyle("textAlign", "center");
+					
+					imageOH.source = pImage;
+					imageOH.width = 200;
+					imageOH.height = 200;
+					imageOH.toolTip = pURL;
+					
+					hGroupMain.addElement(imageOH);
+					hGroupMain.addElement(name);
+					
+					groupPicturesCard.addElement(hGroupMain);
+					
+					vGroupContent.addElement(groupPicturesCard);
+					vGroupContent.addElement(picturesLine);
+					
+					bottomSpacer.height = 10;
+					bottomSpacer.percentWidth = 100;
+					
+					groupPicturesCard.toolTip = pURL;
+					groupPicturesCard.id = pImage;
+					
+					name.addEventListener(MouseEvent.CLICK, onClickOH);
+					//imageOH.addEventListener(MouseEvent.CLICK, onClickOHIMG);
+					
+					vGroupContent.addElement(bottomSpacer);
+					count++;
 				}
+				labelPictureCount.text = "Total number of oral histories: " + String(count);
 				loadingRes.visible = false;
 				vGroupContent.visible = true;
 			}
+			
+			// http://stackoverflow.com/a/14762479/2363223
+			protected function onClickOH(e:MouseEvent):void {
+				if (e.target is Label) {
+					var url:Label = e.target as Label;
+					navigateToURL(new URLRequest("https://www.youtube.com/watch?v=" + url.toolTip));
+				}
+			}
+			
+			// http://stackoverflow.com/a/14762479/2363223
+			/*protected function onClickOHIMG(e:MouseEvent):void {
+				if (e.target is Image) {
+					var url:Image = e.target as Image;
+					navigateToURL(new URLRequest("https://www.youtube.com/watch?v=" + url.toolTip));
+				}
+			}*/
 		]]>
 	</fx:Script>
 	
 	<s:VGroup id="vGroupMain" height="100%" width="100%" gap="0">
-		<s:Group id="groupActionBarTitle" width="100%">
+		<s:Group id="groupActionBarname" width="100%">
 			<s:Rect width="100%" height="100%">
-				<s:fill><s:SolidColor id="backgroundActionBarTitle" color="#F9F9F9"/></s:fill>
+				<s:fill><s:SolidColor id="backgroundActionBarname" color="#F9F9F9"/></s:fill>
 			</s:Rect>
 			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
-				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 30}" width="{labelActionBarTitle.height - 30}" click="navigator.popView(crossFade);"/>
-				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Oral Histories" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
+				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarname.height - 30}" width="{labelActionBarname.height - 30}" click="navigator.popView(crossFade);"/>
+				<s:Label id="labelActionBarname" height="100%" maxDisplayedLines="1" text="Oral Histories" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
 				<s:Spacer width="100%"/>
 				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
 			</s:HGroup>
@@ -105,43 +194,9 @@
 					
 					<s:VGroup id="vGroupContent" height="100%" width="100%" gap="0" paddingRight="20" paddingLeft="20" paddingTop="20" paddingBottom="20" visible="false">
 						
-						<s:Label id="labelHistoryTitle" maxDisplayedLines="1" text="History" color="#000000" styleName="title" paddingBottom="20"/>
-						<s:Group id="groupCardHistory" width="100%">
-							<s:Rect width="100%" height="100%">
-								<!--<s:stroke>
-								<s:SolidColorStroke id="colourActionBarTitleBorder" color="#000000" weight="2" />
-								</s:stroke>-->
-								<s:fill><s:SolidColor id="backgroundCardHistory" color="#FFFFFF"/></s:fill>
-							</s:Rect>
-							
-							<s:Label id="labelHistory" text="" styleName="desc" width="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
-						</s:Group>
-						<s:Line width="100%">
-							<s:stroke>
-								<s:SolidColorStroke color="0xB0B0B0" weight="2"/>
-							</s:stroke>
-						</s:Line>
+						<s:Label id="labelPictureCount" maxDisplayedLines="1" text="" color="#000000" styleName="title" paddingBottom="20" width="100%"/>
 						
-						<s:Spacer height="40"/>
-						
-						<s:Label id="labelReferencesTitle" maxDisplayedLines="1" text="References" color="#000000" styleName="title" paddingTop="20" paddingBottom="20"/>
-						<s:Group id="groupCardReferences" width="100%">
-							<s:Rect width="100%" height="100%">
-								<!--<s:stroke>
-								<s:SolidColorStroke id="colourActionBarTitleBorder" color="#000000" weight="2" />
-								</s:stroke>-->
-								<s:fill><s:SolidColor id="backgroundCardReferences" color="#FFFFFF"/></s:fill>
-							</s:Rect>
-							
-							<s:Label id="labelReferences" text="" styleName="desc" width="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
-						</s:Group>
-						<s:Line width="100%">
-							<s:stroke>
-								<s:SolidColorStroke color="0xB0B0B0" weight="2"/>
-							</s:stroke>
-						</s:Line>
-						
-					</s:VGroup>	
+					</s:VGroup>
 					
 				</s:Scroller>
 				

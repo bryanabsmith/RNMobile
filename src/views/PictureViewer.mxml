@@ -46,6 +46,10 @@
 					vGroupContent.scaleX *= e.scaleX;
 					vGroupContent.scaleY *= e.scaleY; 
 				}
+				
+				/*if (1 == 1) {
+					imagePicture.percentWidth = 100;
+				}*/
 			}
 			
 			private function openSource(e:MouseEvent):void {

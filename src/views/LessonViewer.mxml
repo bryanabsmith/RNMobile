@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="view1_creationCompleteHandler(event)"
+		xmlns:s="library://ns.adobe.com/flex/spark" name="Home" actionBarVisible="false">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.CrossFadeViewTransition;
+			
+			import air.net.URLMonitor;
+			
+			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
+			
+			private var urlMonitor:URLMonitor;
+			
+			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/lessons/";
+			
+			[Embed(source="../res/previous.png")]
+			[Bindable]
+			public var imgPrevious:Class;
+			
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
+					hGroupActionBarContents.paddingTop = 40;
+				} else {
+					hGroupActionBarContents.paddingTop = 0;
+				}
+				
+				url += data[0] + ".xml";
+				
+				var urlRequest:URLRequest = new URLRequest("http://www.bryanabsmith.com");
+				urlMonitor = new URLMonitor(urlRequest);
+				urlMonitor.addEventListener(StatusEvent.STATUS, onStatusEvent);
+				urlMonitor.start();
+			}
+			
+			private function onStatusEvent(event:StatusEvent):void
+			{
+				var evt:StatusEvent = event;
+				if (evt.code == "Service.available") {
+					/*groupNetworkError.visible = false;
+					groupNetworkError.includeInLayout = false;
+					mainScroller.enabled = true;*/
+					
+					var myLoader:URLLoader = new URLLoader();
+					myLoader.addEventListener(Event.COMPLETE, showLesson);
+					myLoader.load(new URLRequest(url));
+				} else {
+					/*groupNetworkError.visible = true;
+					groupNetworkError.includeInLayout = true;
+					mainScroller.enabled = false;*/
+				}
+			}
+			
+			protected function showLesson(event:Event):void
+			{
+				var fileContents:XML = new XML(event.currentTarget.data);
+				var count:int = 1;
+				
+				labelLessonName.text = fileContents.title.@text[0];
+				labelAuthorName.text = fileContents.author.@text[0];
+				labelOverviewName.text = fileContents.overview.@text[0];
+				labelGoalsName.text = fileContents.goals.@text[0];
+				labelCurriculumName.text = fileContents.curriculum.@province[0] + ", Grade " + fileContents.curriculum.@grade[0] + ", " + fileContents.curriculum.@subject[0] + "\n\n" + fileContents.curriculum.@expectation[0];
+				
+				for (var item:String in fileContents.step) {
+					labelStepsName.text += String(count) + ". " + fileContents.step.@text[item] + "\n\n";
+					count++;
+				}
+				
+				vGroupContent.visible = true;
+				loadingRes.visible = false;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="vGroupMain" height="100%" width="100%" gap="0">
+		<s:Group id="groupActionBarname" width="100%">
+			<s:Rect width="100%" height="100%">
+				<s:fill><s:SolidColor id="backgroundActionBarname" color="#F9F9F9"/></s:fill>
+			</s:Rect>
+			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
+				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarname.height - 30}" width="{labelActionBarname.height - 30}" click="navigator.popView(crossFade);"/>
+				<s:Label id="labelActionBarname" height="100%" maxDisplayedLines="1" text="Lesson Viewer" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
+				<s:Spacer width="100%"/>
+				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
+			</s:HGroup>
+		</s:Group>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="0xB1B1B1" weight="2"/>
+			</s:stroke>
+		</s:Line>
+		
+		<!-- http://help.adobe.com/en_US/flex/using/WS422719A4-7849-4921-AF39-57FF567B483B.html#WS063B0491-B7AB-4b00-A39F-E44310BCB0E0 -->
+		<!--<s:SkinnableContainer id="backgroundContainer" height="100%" width="100%" skinClass="skins.BackPic">-->
+		
+		<s:VGroup id="vGroupBackground" width="100%" height="100%" gap="0">
+			
+			<s:Group id="groupBackground" width="100%" height="100%">
+				
+				<s:Rect width="100%" height="100%">
+					<s:fill><s:SolidColor id="backgroundMainColour" color="#E8E8E8"/></s:fill>
+				</s:Rect>
+				
+				<s:Scroller id="mainScroller" width="100%" height="100%">
+					
+					<s:VGroup id="vGroupContent" height="100%" width="100%" gap="0" paddingRight="20" paddingLeft="20" paddingTop="20" paddingBottom="20" visible="false">
+						
+						<s:Label id="labelLessonTitle" width="100%" maxDisplayedLines="1" text="Title" color="#167AFF" styleName="title" paddingTop="10" paddingBottom="10"/>
+						<s:Label id="labelLessonName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+						<s:Label id="labelAuthorTitle" width="100%" maxDisplayedLines="1" text="Author" color="#167AFF" styleName="title" paddingBottom="10"/>
+						<s:Label id="labelAuthorName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+						<s:Label id="labelOverviewTitle" width="100%" maxDisplayedLines="1" text="Overview" color="#167AFF" styleName="title" paddingBottom="10"/>
+						<s:Label id="labelOverviewName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+						<s:Label id="labelGoalsTitle" width="100%" maxDisplayedLines="1" text="Goals" color="#167AFF" styleName="title" paddingBottom="10"/>
+						<s:Label id="labelGoalsName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+						<s:Label id="labelCurriculumTitle" width="100%" maxDisplayedLines="1" text="Curriculum" color="#167AFF" styleName="title" paddingBottom="10"/>
+						<s:Label id="labelCurriculumName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+						<s:Label id="labelStepsTitle" width="100%" maxDisplayedLines="1" text="Steps" color="#167AFF" styleName="title" paddingBottom="10"/>
+						<s:Label id="labelStepsName" width="100%" text="" color="#000000" styleName="desc" paddingBottom="50"/>
+						
+					</s:VGroup>
+					
+				</s:Scroller>
+				
+			</s:Group>
+			
+		</s:VGroup>
+		<!--</s:SkinnableContainer>-->		
+	</s:VGroup>
+	
+</s:View>

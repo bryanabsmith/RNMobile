@@ -1,4 +1,4 @@
-IAACS 2015 App
+RNMobile
 ==============
 
 Teaching about residential schools through mobile technology.
