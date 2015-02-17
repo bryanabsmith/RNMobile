@@ -27,6 +27,10 @@
 			[Bindable]
 			public var imgYou:Class;
 			
+			[Embed(source="../res/dates.png")]
+			[Bindable]
+			public var imgDates:Class;
+			
 			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
 			
 			private var geo:Geolocation;
@@ -42,8 +46,10 @@
 			{
 				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
 					hGroupActionBarContents.paddingTop = 40;
+					vGroupDatesOverlay.paddingTop = 40;
 				} else {
 					hGroupActionBarContents.paddingTop = 0;
+					vGroupDatesOverlay.paddingTop = 0;
 				}
 				
 				if (Geolocation.isSupported) { 
@@ -90,6 +96,20 @@
 					schoolPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
 					mqMap.addShape(schoolPoint);
 				}
+				
+				for (var itemProv:String in fileContents.dates) {
+					labelProvBC.text = "British Columbia: " + fileContents.dates.@bc[itemProv] + ".";
+					labelProvAB.text = "Alberta: " + fileContents.dates.@ab[itemProv] + ".";
+					labelProvSK.text = "Saskatchewan: " + fileContents.dates.@sk[itemProv] + ".";
+					labelProvMB.text = "Manitoba: " + fileContents.dates.@mb[itemProv] + ".";
+					labelProvON.text = "Ontario: " + fileContents.dates.@on[itemProv] + ".";
+					labelProvQC.text = "Quebec: " + fileContents.dates.@qc[itemProv] + ".";
+					labelProvNS.text = "Nova Scotia: " + fileContents.dates.@ns[itemProv] + ".";
+					labelProvYK.text = "Yukon: " + fileContents.dates.@yk[itemProv] + ".";
+					labelProvNT.text = "Northwest Territories: " + fileContents.dates.@nt[itemProv] + ".";
+					labelProvNU.text = "Nunavut: " + fileContents.dates.@nu[itemProv] + ".";
+				}
+				
 				loadingRes.visible = false;
 			}
 			
@@ -100,7 +120,7 @@
 				mqMap.setCenter(new LatLng(Number(lat), Number(long)));
 				
 				var youIcon:ImageMapIcon = new ImageMapIcon();
-				youIcon.setImage(new imgYou(), 22, 22);
+				youIcon.setImage(new imgYou(), 72, 72);
 				var youPoint:Poi = new Poi(new LatLng(Number(lat), Number(long)), youIcon);
 				youPoint.rolloverAndInfoTitleText = "Your Location";
 				//youPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
@@ -130,6 +150,7 @@
 				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Map" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
 				<s:Spacer width="100%"/>
 				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
+				<s:Image id="imageDates" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgDates}" smooth="true" smoothingQuality="high" click="groupDatesOverlay.visible = true; groupDatesOverlay.includeInLayout = true;"/>
 			</s:HGroup>
 		</s:Group>
 		<s:Line width="100%">
@@ -164,5 +185,59 @@
 		</s:VGroup>
 		<!--</s:SkinnableContainer>-->		
 	</s:VGroup>
+	
+	
+	<s:Group id="groupDatesOverlay" width="100%" height="100%" visible="false" includeInLayout="false" depth="2">
+		
+		<s:Rect width="100%" height="100%">
+			<s:fill><s:SolidColor id="backgroundDates" color="#000000" alpha="0.9"/></s:fill>
+		</s:Rect>
+		
+		<s:VGroup id="vGroupDatesOverlay" width="100%" height="100%" paddingTop="20" paddingLeft="20" paddingRight="20">
+			
+			<s:Scroller id="datesScroller" width="100%" height="100%">
+				<s:VGroup width="100%" height="100%" gap="0" paddingTop="10" paddingBottom="10">
+					
+					<s:Label id="labelProvince" text="Provinces" styleName="title" color="#FFFFFF" paddingBottom="20"/>
+					<s:Label id="labelProvBC" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvAB" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvSK" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvMB" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvON" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvQC" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvNS" text="Dates" styleName="desc"/>
+					
+					<s:Label id="labelTerritories" text="Territories" styleName="title" color="#FFFFFF" paddingTop="30" paddingBottom="20"/>
+					<s:Label id="labelProvYK" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvNT" text="Dates" styleName="desc"/>
+					<s:Label id="labelProvNU" text="Dates" styleName="desc"/>
+				</s:VGroup>
+			</s:Scroller>
+			
+			
+			
+			<s:HGroup id="hGroupButtonsDatesOverlay" width="100%" paddingBottom="20">
+				
+				<!--<s:Group id="groupCancelNewOverlay" click="groupConfigureOverlay.visible = false; groupConfigureOverlay.includeInLayout = false;">
+				<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
+				<s:fill><s:SolidColor id="backgroundCancelNewOverlayColour" color="#167AFF"/></s:fill>
+				</s:Rect>
+				<s:Label id="labelCancelNewOverlay" text="Cancel" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+				</s:Group>-->
+				
+				<s:Spacer width="100%"/>
+				
+				<s:Group id="groupCloseOverlay" click="groupDatesOverlay.visible = false; groupDatesOverlay.includeInLayout = false;">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
+						<s:fill><s:SolidColor id="backgroundCancelCloseOverlayColour" color="#167AFF"/></s:fill>
+					</s:Rect>
+					<s:Label id="labelCancelCloseOverlay" text="Close" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+				</s:Group>
+				
+			</s:HGroup>
+			
+		</s:VGroup>
+		
+	</s:Group>
 	
 </s:View>

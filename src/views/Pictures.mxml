@@ -155,7 +155,7 @@
 			protected function onClickPictures(e:MouseEvent):void {
 				if (e.target is Label) {
 					var pictures:Label = e.target as Label;
-					navigator.pushView(PictureViewer, [pictures.toolTip, pictures.id, pictures.name]);
+					navigator.pushView(PictureViewer, [pictures.toolTip, pictures.id, pictures.name], null, crossFade);
 				}
 			}
 		]]>

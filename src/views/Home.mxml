@@ -3,11 +3,11 @@
 		xmlns:s="library://ns.adobe.com/flex/spark" title="Home" actionBarVisible="false">
 	<fx:Script>
 		<![CDATA[
-			
 			import flash.sensors.Geolocation;
 			
 			import mx.events.FlexEvent;
 			
+			import spark.managers.PersistenceManager;
 			import spark.transitions.CrossFadeViewTransition;
 			
 			[Embed(source="../res/map.png")]
@@ -30,9 +30,21 @@
 			[Bindable]
 			public var imgLessons:Class;
 			
+			[Embed(source="../res/videos.png")]
+			[Bindable]
+			public var imgVideos:Class;
+			
+			[Embed(source="../res/resources.png")]
+			[Bindable]
+			public var imgResources:Class;
+			
 			[Embed(source="../res/settings.png")]
 			[Bindable]
 			public var imgSettings:Class;
+			
+			[Embed(source="../res/about.png")]
+			[Bindable]
+			public var imgAbout:Class;
 			
 			private var geo:Geolocation;
 			
@@ -40,22 +52,30 @@
 			private var long:String;
 			
 			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
+			private var p:PersistenceManager = new PersistenceManager();
 			
 			protected function view1_creationCompleteHandler(event:FlexEvent):void
 			{
+				
+				var locationStatus:String = p.getProperty("location") as String
+				
 				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
 					hGroupActionBarContents.paddingTop = 40;
+					vGroupConfigureOverlay.paddingTop = 40;
 				} else {
 					hGroupActionBarContents.paddingTop = 0;
+					vGroupConfigureOverlay.paddingTop = 0;
 				}
 				
-				// This is here simply to trigger the GPS lookup (in case coordinates aren't retrieved prior to pushing the Map view)
-				if (Geolocation.isSupported) { 
-					geo = new Geolocation(); 
-					if (!geo.muted) { 
-						geo.addEventListener(GeolocationEvent.UPDATE, geoUpdateHandler); 
-					} 
-					geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
+				if (locationStatus == "enabled") {
+					// This is here simply to trigger the GPS lookup (in case coordinates aren't retrieved prior to pushing the Map view)
+					if (Geolocation.isSupported) { 
+						geo = new Geolocation(); 
+						if (!geo.muted) { 
+							geo.addEventListener(GeolocationEvent.UPDATE, geoUpdateHandler); 
+						} 
+						geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
+					}
 				}
 			}
 			
@@ -100,6 +120,39 @@
 				navigator.pushView(Lessons, null, null, crossFade);
 			}
 			
+			protected function groupOn_clickHandler(event:MouseEvent):void
+			{
+				backgroundBackgroundOn.color = 0xFFFFFF;
+				labelOn.setStyle("color", "#167AFF");
+				backgroundBackgroundOff.color = 0x167AFF;
+				labelOff.setStyle("color", "#FFFFFF");
+				p.setProperty("location", "enabled");
+			}
+			
+			protected function groupOff_clickHandler(event:MouseEvent):void
+			{
+				backgroundBackgroundOn.color = 0x167AFF;
+				labelOn.setStyle("color", "#FFFFFF");
+				backgroundBackgroundOff.color = 0xFFFFFF;
+				labelOff.setStyle("color", "#167AFF");
+				p.setProperty("location", "disabled");
+			}
+			
+			protected function groupCardResources_clickHandler(event:MouseEvent):void
+			{
+				navigator.pushView(Resources, null, null, crossFade);
+			}
+			
+			protected function groupCardAbout_clickHandler(event:MouseEvent):void
+			{
+				navigator.pushView(About, null, null, crossFade);
+			}
+			
+			protected function groupCardVideos_clickHandler(event:MouseEvent):void
+			{
+				navigator.pushView(Videos, null, null, crossFade);
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -111,7 +164,7 @@
 			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
 				<s:Label id="labelActionBarTitle" maxDisplayedLines="1" text="RNMobile" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20"/>
 				<s:Spacer width="100%"/>
-				<s:Image id="imageSettings" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgSettings}" smooth="true" smoothingQuality="high"/>
+				<s:Image id="imageSettings" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgSettings}" smooth="true" smoothingQuality="high" click="groupConfigureOverlay.visible = true; groupConfigureOverlay.includeInLayout = true"/>
 			</s:HGroup>
 		</s:Group>
 		<s:Line width="100%">
@@ -231,6 +284,30 @@
 						
 						<s:Spacer height="30"/>
 						
+						<s:Group id="groupCardVideos" width="100%" click="groupCardVideos_clickHandler(event)">
+							<s:Rect width="100%" height="100%">
+								<!--<s:stroke>
+								<s:SolidColorStroke id="colourActionBarTitleBorder" color="#000000" weight="2" />
+								</s:stroke>-->
+								<s:fill><s:SolidColor id="backgroundCardVideos" color="#FFFFFF"/></s:fill>
+							</s:Rect>
+							
+							<s:HGroup width="100%" height="100%" paddingRight="10" paddingLeft="10" paddingTop="10" paddingBottom="10" verticalAlign="middle">
+								<s:Image id="imageVideos" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgVideos}" smooth="true" smoothingQuality="high"/>
+								<s:VGroup width="100%" height="100%" paddingLeft="30">
+									<s:Label id="labelVideosTitle" text="Videos" styleName="title" width="100%"/>
+									<s:Label id="labelVideosDesc" text="Watch content related to the history of residential schools." styleName="desc" width="100%"/>
+								</s:VGroup>
+							</s:HGroup>
+						</s:Group>
+						<s:Line width="100%">
+							<s:stroke>
+								<s:SolidColorStroke color="0xB0B0B0" weight="2"/>
+							</s:stroke>
+						</s:Line>
+						
+						<s:Spacer height="30"/>
+						
 						<s:Group id="groupCardLessons" width="100%" click="groupCardLessons_clickHandler(event)">
 							<s:Rect width="100%" height="100%">
 								<!--<s:stroke>
@@ -253,6 +330,54 @@
 							</s:stroke>
 						</s:Line>
 						
+						<s:Spacer height="30"/>
+						
+						<s:Group id="groupCardResources" width="100%" click="groupCardResources_clickHandler(event)">
+							<s:Rect width="100%" height="100%">
+								<!--<s:stroke>
+								<s:SolidColorStroke id="colourActionBarTitleBorder" color="#000000" weight="2" />
+								</s:stroke>-->
+								<s:fill><s:SolidColor id="backgroundCardResources" color="#FFFFFF"/></s:fill>
+							</s:Rect>
+							
+							<s:HGroup width="100%" height="100%" paddingRight="10" paddingLeft="10" paddingTop="10" paddingBottom="10" verticalAlign="middle">
+								<s:Image id="imageResources" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgResources}" smooth="true" smoothingQuality="high"/>
+								<s:VGroup width="100%" height="100%" paddingLeft="30">
+									<s:Label id="labelResourcesTitle" text="Resources" styleName="title" width="100%"/>
+									<s:Label id="labelResourcesDesc" text="Resources to learn more about residential schools." styleName="desc" width="100%"/>
+								</s:VGroup>
+							</s:HGroup>
+						</s:Group>
+						<s:Line width="100%">
+							<s:stroke>
+								<s:SolidColorStroke color="0xB0B0B0" weight="2"/>
+							</s:stroke>
+						</s:Line>
+						
+						<s:Spacer height="30"/>
+						
+						<s:Group id="groupCardAbout" width="100%" click="groupCardAbout_clickHandler(event)">
+							<s:Rect width="100%" height="100%">
+								<!--<s:stroke>
+								<s:SolidColorStroke id="colourActionBarTitleBorder" color="#000000" weight="2" />
+								</s:stroke>-->
+								<s:fill><s:SolidColor id="backgroundCardAbout" color="#FFFFFF"/></s:fill>
+							</s:Rect>
+							
+							<s:HGroup width="100%" height="100%" paddingRight="10" paddingLeft="10" paddingTop="10" paddingBottom="10" verticalAlign="middle">
+								<s:Image id="imageAbout" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgAbout}" smooth="true" smoothingQuality="high"/>
+								<s:VGroup width="100%" height="100%" paddingLeft="30">
+									<s:Label id="labelAboutTitle" text="About" styleName="title" width="100%"/>
+									<s:Label id="labelAboutDesc" text="About to learn more about residential schools." styleName="desc" width="100%"/>
+								</s:VGroup>
+							</s:HGroup>
+						</s:Group>
+						<s:Line width="100%">
+							<s:stroke>
+								<s:SolidColorStroke color="0xB0B0B0" weight="2"/>
+							</s:stroke>
+						</s:Line>
+						
 					</s:VGroup>	
 					
 				</s:Scroller>
@@ -260,7 +385,72 @@
 			</s:Group>
 			
 		</s:VGroup>
-		<!--</s:SkinnableContainer>-->		
+		
 	</s:VGroup>
+	
+	<s:Group id="groupConfigureOverlay" width="100%" height="100%" visible="false" includeInLayout="false" depth="2">
+		
+		<s:Rect width="100%" height="100%">
+			<s:fill><s:SolidColor id="backgroundConfigure" color="#000000" alpha="0.9"/></s:fill>
+		</s:Rect>
+		
+		<s:VGroup id="vGroupConfigureOverlay" width="100%" height="100%" paddingTop="20" paddingLeft="20" paddingRight="20">
+			
+			<s:HGroup width="100%" gap="0" paddingTop="10" paddingBottom="10" verticalAlign="middle">
+				
+				<s:Label id="labelLocation" text="Location" styleName="title" color="#FFFFFF"/>
+				<s:Spacer width="100%"/>
+				
+				<s:Group id="groupOn" width="100%" click="groupOn_clickHandler(event)">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="15" topLeftRadiusY="15" bottomLeftRadiusX="15" bottomLeftRadiusY="15">
+						<s:stroke>
+							<s:SolidColorStroke id="colourActionBarTitleBorderOn" color="#167AFF" weight="2"/>
+						</s:stroke>
+						<s:fill>
+							<s:SolidColor id="backgroundBackgroundOn" color="#FFFFFF"/>
+						</s:fill>
+					</s:Rect>
+					<s:Label id="labelOn" text="On" color="#167AFF" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" styleName="desc" width="100%" textAlign="center"/>
+				</s:Group>
+				
+				<s:Group id="groupOff" width="100%" click="groupOff_clickHandler(event)">
+					<s:Rect width="100%" height="100%" topRightRadiusX="15" topRightRadiusY="15" bottomRightRadiusX="15" bottomRightRadiusY="15">
+						<s:stroke>
+							<s:SolidColorStroke id="colourActionBarTitleBorderOff" color="#167AFF" weight="2"/>
+						</s:stroke>
+						<s:fill>
+							<s:SolidColor id="backgroundBackgroundOff" color="#167AFF"/>
+						</s:fill>
+					</s:Rect>
+					<s:Label id="labelOff" text="Off" color="#FFFFFF" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" styleName="desc" width="100%" textAlign="center"/>
+				</s:Group>
+			</s:HGroup>
+			
+			
+			<s:Spacer height="100%"/>
+			
+			<s:HGroup id="hGroupButtonsNewOverlay" width="100%" paddingBottom="20">
+				
+				<!--<s:Group id="groupCancelNewOverlay" click="groupConfigureOverlay.visible = false; groupConfigureOverlay.includeInLayout = false;">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
+						<s:fill><s:SolidColor id="backgroundCancelNewOverlayColour" color="#167AFF"/></s:fill>
+					</s:Rect>
+					<s:Label id="labelCancelNewOverlay" text="Cancel" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+				</s:Group>-->
+				
+				<s:Spacer width="100%"/>
+				
+				<s:Group id="groupCloseOverlay" click="groupConfigureOverlay.visible = false; groupConfigureOverlay.includeInLayout = false;">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
+						<s:fill><s:SolidColor id="backgroundCancelCloseOverlayColour" color="#167AFF"/></s:fill>
+					</s:Rect>
+					<s:Label id="labelCancelCloseOverlay" text="Close" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+				</s:Group>
+				
+			</s:HGroup>
+			
+		</s:VGroup>
+		
+	</s:Group>
 	
 </s:View>

@@ -155,7 +155,7 @@
 			protected function onClickLesson(e:MouseEvent):void {
 				if (e.target is Label) {
 					var lesson:Label = e.target as Label;
-					navigator.pushView(LessonViewer, [lesson.toolTip]);
+					navigator.pushView(LessonViewer, [lesson.toolTip], null, crossFade);
 				}
 			}
 		]]>
