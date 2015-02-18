@@ -31,6 +31,10 @@
 			[Bindable]
 			public var imgDates:Class;
 			
+			[Embed(source="../res/tour.png")]
+			[Bindable]
+			public var imgTour:Class;
+			
 			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
 			
 			private var geo:Geolocation;
@@ -41,6 +45,10 @@
 			private var urlMonitor:URLMonitor;
 			
 			private var url:String = "http://www.bryanabsmith.com/drnp/xmldata/resSchools.xml";
+			
+			private var urlTour:String = "http://www.bryanabsmith.com/drnp/xmldata/resTour.xml";
+			private var tourCounter:int = 0;
+			private var tourData:Array = new Array();
 			
 			protected function view1_creationCompleteHandler(event:FlexEvent):void
 			{
@@ -120,7 +128,7 @@
 				mqMap.setCenter(new LatLng(Number(lat), Number(long)));
 				
 				var youIcon:ImageMapIcon = new ImageMapIcon();
-				youIcon.setImage(new imgYou(), 72, 72);
+				youIcon.setImage(new imgYou(), 36, 36);
 				var youPoint:Poi = new Poi(new LatLng(Number(lat), Number(long)), youIcon);
 				youPoint.rolloverAndInfoTitleText = "Your Location";
 				//youPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
@@ -137,6 +145,60 @@
 					geo.addEventListener(GeolocationEvent.UPDATE, geoStatusHandler);
 			}
 			
+			protected function imageTour_clickHandler(event:MouseEvent):void
+			{
+				var urlRequest:URLRequest = new URLRequest("http://www.bryanabsmith.com");
+				urlMonitor = new URLMonitor(urlRequest);
+				urlMonitor.addEventListener(StatusEvent.STATUS, onStatusEventTour);
+				urlMonitor.start();
+			}
+			
+			private function onStatusEventTour(event:StatusEvent):void
+			{
+				var evt:StatusEvent = event;
+				if (evt.code == "Service.available") {
+					/*groupNetworkError.visible = false;
+					groupNetworkError.includeInLayout = false;
+					mainScroller.enabled = true;*/
+					
+					var myLoader:URLLoader = new URLLoader();
+					myLoader.addEventListener(Event.COMPLETE, showTour);
+					myLoader.load(new URLRequest(urlTour));
+				} else {
+					/*groupNetworkError.visible = true;
+					groupNetworkError.includeInLayout = true;
+					mainScroller.enabled = false;*/
+				}
+			}
+			
+			protected function showTour(event:Event):void
+			{
+				var fileContents:XML = new XML(event.currentTarget.data);
+
+				for (var item:String in fileContents.tour) {
+					var tempArray:Array = new Array();
+
+					tempArray.push(fileContents.tour.@lat[item]);
+					tempArray.push(fileContents.tour.@long[item]);
+					tempArray.push(fileContents.tour.@name[item]);
+					tempArray.push(fileContents.tour.@school[item]);
+					tempArray.push(fileContents.tour.@quote[item]);
+					tempArray.push(fileContents.tour.@url[item]);
+					
+					tourData.push(tempArray);
+				}
+				
+				startTour();
+				
+			}
+			
+			private function startTour():void {
+				for (var item:String in tourData) {
+					trace(tourData[tourCounter][0] + " ---- " + tourData[tourCounter][1] + " ---- " + tourData[tourCounter][2] + " ---- " + tourData[tourCounter][3] + " ---- " + tourData[tourCounter][4] + " ---- " + tourData[tourCounter][5]);
+					tourCounter++;
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -150,6 +212,7 @@
 				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Map" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
 				<s:Spacer width="100%"/>
 				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
+				<s:Image id="imageTour" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgTour}" smooth="true" smoothingQuality="high" click="imageTour_clickHandler(event)"/>
 				<s:Image id="imageDates" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgDates}" smooth="true" smoothingQuality="high" click="groupDatesOverlay.visible = true; groupDatesOverlay.includeInLayout = true;"/>
 			</s:HGroup>
 		</s:Group>
