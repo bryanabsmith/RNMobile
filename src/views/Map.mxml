@@ -3,14 +3,15 @@
 		xmlns:s="library://ns.adobe.com/flex/spark" title="Home" actionBarVisible="false">
 	<fx:Script>
 		<![CDATA[
+			import com.mapquest.LatLng;
 			import com.mapquest.tilemap.pois.ImageMapIcon;
 			import com.mapquest.tilemap.pois.Poi;
-			import com.mapquest.LatLng;
 			
 			import flash.sensors.Geolocation;
 			
 			import mx.events.FlexEvent;
 			
+			import spark.managers.PersistenceManager;
 			import spark.transitions.CrossFadeViewTransition;
 			
 			import air.net.URLMonitor;
@@ -27,6 +28,10 @@
 			[Bindable]
 			public var imgYou:Class;
 			
+			[Embed(source="../res/tourPerson.png")]
+			[Bindable]
+			public var imgTourMarker:Class;
+			
 			[Embed(source="../res/dates.png")]
 			[Bindable]
 			public var imgDates:Class;
@@ -34,6 +39,8 @@
 			[Embed(source="../res/tour.png")]
 			[Bindable]
 			public var imgTour:Class;
+			
+			private var p:PersistenceManager = new PersistenceManager();
 			
 			public var crossFade:CrossFadeViewTransition = new CrossFadeViewTransition();
 			
@@ -50,14 +57,19 @@
 			private var tourCounter:int = 0;
 			private var tourData:Array = new Array();
 			
+			private var tourTimer:Timer;
+			private var tourPoint:Poi;
+			
 			protected function view1_creationCompleteHandler(event:FlexEvent):void
 			{
 				if (Capabilities.os.substring(0,2) == "iP") { // iPhone, iPad and iPod Touch padding at the top
 					hGroupActionBarContents.paddingTop = 40;
 					vGroupDatesOverlay.paddingTop = 40;
+					vGroupTourOverlay.paddingTop = 40;
 				} else {
 					hGroupActionBarContents.paddingTop = 0;
 					vGroupDatesOverlay.paddingTop = 0;
+					vGroupTourOverlay.paddingTop = 0;
 				}
 				
 				if (Geolocation.isSupported) { 
@@ -67,7 +79,7 @@
 					} 
 					geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
 				} else { 
-					mqMap.setCenter(new LatLng(57.846292, -98.796020)); // LMX
+					mqMap.setCenter(new LatLng(57.846292, -98.796020));
 				}
 				
 				var urlRequest:URLRequest = new URLRequest("http://www.bryanabsmith.com");
@@ -128,7 +140,7 @@
 				mqMap.setCenter(new LatLng(Number(lat), Number(long)));
 				
 				var youIcon:ImageMapIcon = new ImageMapIcon();
-				youIcon.setImage(new imgYou(), 36, 36);
+				youIcon.setImage(new imgYou(), 48, 48);
 				var youPoint:Poi = new Poi(new LatLng(Number(lat), Number(long)), youIcon);
 				youPoint.rolloverAndInfoTitleText = "Your Location";
 				//youPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
@@ -147,6 +159,9 @@
 			
 			protected function imageTour_clickHandler(event:MouseEvent):void
 			{
+				groupTourOverlay.visible = true;
+				groupTourOverlay.includeInLayout = true;
+				
 				var urlRequest:URLRequest = new URLRequest("http://www.bryanabsmith.com");
 				urlMonitor = new URLMonitor(urlRequest);
 				urlMonitor.addEventListener(StatusEvent.STATUS, onStatusEventTour);
@@ -175,6 +190,8 @@
 			{
 				var fileContents:XML = new XML(event.currentTarget.data);
 
+				//trace(fileContents.children().length()); // http://stackoverflow.com/questions/2655514/how-do-i-find-the-number-of-xml-children-in-as3
+				
 				for (var item:String in fileContents.tour) {
 					var tempArray:Array = new Array();
 
@@ -188,15 +205,81 @@
 					tourData.push(tempArray);
 				}
 				
-				startTour();
+				mqMap.zoom = 6;
+				var lat:Number = Number(tourData[0][0]);
+				var long:Number = Number(tourData[0][1]);
+				
+				labelTourName.text = tourData[0][2];
+				labelTourDetails.text = tourData[0][3] + ": " + tourData[0][4];
+				
+				var markerIcon:ImageMapIcon = new ImageMapIcon();
+				markerIcon.setImage(new imgTourMarker(), 36, 36);
+				tourPoint = new Poi(new LatLng(lat, long), markerIcon);
+				tourPoint.rolloverAndInfoTitleText = "Your Location";
+				//youPoint.infoContent = "Location: " + fileContents.school.@location[item] + " (" + fileContents.school.@years[item] + ")";
+				mqMap.addShape(tourPoint);
+				tourCounter = 1;
+				
+				mqMap.setCenter(new LatLng(lat, long));
+				
+				var timeSpeed:String = p.getProperty("tourspeed") as String;
+				if (timeSpeed == "ten") {
+					tourTimer = new Timer(10000);
+				} else {
+					tourTimer = new Timer(5000);
+				}
+				
+				tourTimer.addEventListener(TimerEvent.TIMER, startTour);
+				tourTimer.start();
+			}
+			
+			private function startTour(event:TimerEvent):void {
+				try {
+					var lat:Number = Number(tourData[tourCounter][0]);
+					var long:Number = Number(tourData[tourCounter][1]);
+					
+					mqMap.removeShape(tourPoint);
+					
+					trace(tourData[tourCounter][0] + " ---- " + tourData[tourCounter][1] + " ---- " + tourData[tourCounter][2] + " ---- " + tourData[tourCounter][3] + " ---- " + tourData[tourCounter][4] + " ---- " + tourData[tourCounter][5]);
+					
+					labelTourName.text = tourData[tourCounter][2];
+					labelTourDetails.text = tourData[tourCounter][3] + ": " + tourData[tourCounter][4];
+					
+					var markerIcon:ImageMapIcon = new ImageMapIcon();
+					markerIcon.setImage(new imgTourMarker(), 36, 36);
+					tourPoint = new Poi(new LatLng(lat, long), markerIcon);
+					
+					mqMap.addShape(tourPoint);
+					
+					mqMap.setCenter(new LatLng(lat, long));
+					
+					tourCounter++;
+				} catch (e:TypeError) {
+					tourCounter = 0;
+				}
 				
 			}
 			
-			private function startTour():void {
-				for (var item:String in tourData) {
-					trace(tourData[tourCounter][0] + " ---- " + tourData[tourCounter][1] + " ---- " + tourData[tourCounter][2] + " ---- " + tourData[tourCounter][3] + " ---- " + tourData[tourCounter][4] + " ---- " + tourData[tourCounter][5]);
-					tourCounter++;
+			protected function groupCloseTourOverlay_clickHandler(event:MouseEvent):void
+			{
+				tourTimer.stop();
+				mqMap.removeShape(tourPoint);
+				mqMap.zoom = 3;
+				mqMap.setCenter(new LatLng(57.846292, -98.796020));
+				
+				groupTourOverlay.visible = false;
+				groupTourOverlay.includeInLayout = false;
+			}
+			
+			protected function imageBack_clickHandler(event:MouseEvent):void
+			{
+				try {
+					tourTimer.stop();
+					navigator.popView(crossFade);
+				} catch (e:TypeError) {
+					navigator.popView(crossFade);
 				}
+
 			}
 			
 		]]>
@@ -208,8 +291,8 @@
 				<s:fill><s:SolidColor id="backgroundActionBarTitle" color="#F9F9F9"/></s:fill>
 			</s:Rect>
 			<s:HGroup id="hGroupActionBarContents" width="100%" verticalAlign="middle" height="100%" paddingLeft="20" paddingRight="10">
-				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 30}" width="{labelActionBarTitle.height - 30}" click="navigator.popView(crossFade);"/>
-				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Map" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="navigator.popView(crossFade);"/>
+				<s:Image id="imageBack"  source="{imgPrevious}" smooth="true" smoothingQuality="high" height="{labelActionBarTitle.height - 30}" width="{labelActionBarTitle.height - 30}" click="imageBack_clickHandler(event)"/>
+				<s:Label id="labelActionBarTitle" height="100%" maxDisplayedLines="1" text="Map" color="#167AFF" styleName="title" paddingTop="20" paddingBottom="20" click="imageBack_clickHandler(event)"/>
 				<s:Spacer width="100%"/>
 				<s:BusyIndicator id="loadingRes" symbolColor="#167AFF"/>
 				<s:Image id="imageTour" height="{labelActionBarTitle.height - 20}" width="{labelActionBarTitle.height - 20}" source="{imgTour}" smooth="true" smoothingQuality="high" click="imageTour_clickHandler(event)"/>
@@ -226,6 +309,8 @@
 		<!--<s:SkinnableContainer id="backgroundContainer" height="100%" width="100%" skinClass="skins.BackPic">-->
 		
 		<s:VGroup id="vGroupBackground" width="100%" height="100%" gap="0">
+			
+			
 			
 			<s:Group id="groupBackground" width="100%" height="100%">
 				
@@ -249,6 +334,39 @@
 		<!--</s:SkinnableContainer>-->		
 	</s:VGroup>
 	
+	<s:Group id="groupTourOverlay" width="100%" height="30%" visible="false" includeInLayout="false" depth="2">
+		
+		<s:Rect width="100%" height="100%">
+			<s:fill><s:SolidColor id="backgroundTour" color="#000000" alpha="0.9"/></s:fill>
+		</s:Rect>
+		
+		<s:VGroup id="vGroupTourOverlay" width="100%" height="100%" paddingTop="20" paddingLeft="20" paddingRight="20" paddingBottom="20">
+			
+			<s:HGroup id="hGroupTourActionBar" width="100%" paddingTop="10" paddingBottom="10">
+				<s:Label id="labelTourName" text="" styleName="title" color="#FFFFFF" height="100%" verticalAlign="middle"/>
+				
+				<s:Spacer width="100%"/>
+				
+				<s:Group id="groupCloseTourOverlay" click="groupCloseTourOverlay_clickHandler(event)">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
+						<s:fill><s:SolidColor id="backgroundCancelCloseTourOverlayColour" color="#167AFF"/></s:fill>
+					</s:Rect>
+					<s:Label id="labelCancelCloseTourOverlay" text="Stop" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+				</s:Group>
+			</s:HGroup>
+			
+			<s:Scroller id="tourScroller" width="100%" height="100%">
+				<s:VGroup width="100%" height="100%" gap="0" paddingTop="10" paddingBottom="10">
+					
+					
+					<s:Label id="labelTourDetails" text="" styleName="desc" color="#FFFFFF" width="100%" verticalAlign="middle"/>
+					
+				</s:VGroup>
+			</s:Scroller>
+			
+		</s:VGroup>
+		
+	</s:Group>
 	
 	<s:Group id="groupDatesOverlay" width="100%" height="100%" visible="false" includeInLayout="false" depth="2">
 		
@@ -290,11 +408,11 @@
 				
 				<s:Spacer width="100%"/>
 				
-				<s:Group id="groupCloseOverlay" click="groupDatesOverlay.visible = false; groupDatesOverlay.includeInLayout = false;">
+				<s:Group id="groupCloseDatesOverlay" click="groupDatesOverlay.visible = false; groupDatesOverlay.includeInLayout = false;">
 					<s:Rect width="100%" height="100%" topLeftRadiusX="5" topLeftRadiusY="5" topRightRadiusX="5" topRightRadiusY="5" bottomLeftRadiusX="5" bottomLeftRadiusY="5" bottomRightRadiusX="5" bottomRightRadiusY="5">
-						<s:fill><s:SolidColor id="backgroundCancelCloseOverlayColour" color="#167AFF"/></s:fill>
+						<s:fill><s:SolidColor id="backgroundCancelCloseDatesOverlayColour" color="#167AFF"/></s:fill>
 					</s:Rect>
-					<s:Label id="labelCancelCloseOverlay" text="Close" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
+					<s:Label id="labelCancelCloseDatesOverlay" text="Close" styleName="desc" color="#FFFFFF" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15"/>
 				</s:Group>
 				
 			</s:HGroup>

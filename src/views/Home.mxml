@@ -153,6 +153,24 @@
 				navigator.pushView(Videos, null, null, crossFade);
 			}
 			
+			protected function groupFiveSec_clickHandler(event:MouseEvent):void
+			{
+				backgroundBackgroundTenSec.color = 0x167AFF;
+				labelTenSec.setStyle("color", "#FFFFFF");
+				backgroundBackgroundFiveSec.color = 0xFFFFFF;
+				labelFiveSec.setStyle("color", "#167AFF");
+				p.setProperty("tourspeed", "five");
+			}
+			
+			protected function groupTenSec_clickHandler(event:MouseEvent):void
+			{
+				backgroundBackgroundFiveSec.color = 0x167AFF;
+				labelFiveSec.setStyle("color", "#FFFFFF");
+				backgroundBackgroundTenSec.color = 0xFFFFFF;
+				labelTenSec.setStyle("color", "#167AFF");
+				p.setProperty("tourspeed", "ten");
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -426,6 +444,36 @@
 				</s:Group>
 			</s:HGroup>
 			
+			
+			<s:HGroup width="100%" gap="0" paddingTop="10" paddingBottom="10" verticalAlign="middle">
+				
+				<s:Label id="labelTourSpeed" text="Tour Speed" styleName="title" color="#FFFFFF"/>
+				<s:Spacer width="100%"/>
+				
+				<s:Group id="groupFiveSec" width="100%" click="groupFiveSec_clickHandler(event)">
+					<s:Rect width="100%" height="100%" topLeftRadiusX="15" topLeftRadiusY="15" bottomLeftRadiusX="15" bottomLeftRadiusY="15">
+						<s:stroke>
+							<s:SolidColorStroke id="colourActionBarTitleBorderFiveSec" color="#167AFF" weight="2"/>
+						</s:stroke>
+						<s:fill>
+							<s:SolidColor id="backgroundBackgroundFiveSec" color="#FFFFFF"/>
+						</s:fill>
+					</s:Rect>
+					<s:Label id="labelFiveSec" text="5s" color="#167AFF" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" styleName="desc" width="100%" textAlign="center"/>
+				</s:Group>
+				
+				<s:Group id="groupTenSec" width="100%" click="groupTenSec_clickHandler(event)">
+					<s:Rect width="100%" height="100%" topRightRadiusX="15" topRightRadiusY="15" bottomRightRadiusX="15" bottomRightRadiusY="15">
+						<s:stroke>
+							<s:SolidColorStroke id="colourActionBarTitleBorderTenSec" color="#167AFF" weight="2"/>
+						</s:stroke>
+						<s:fill>
+							<s:SolidColor id="backgroundBackgroundTenSec" color="#167AFF"/>
+						</s:fill>
+					</s:Rect>
+					<s:Label id="labelTenSec" text="10s" color="#FFFFFF" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" styleName="desc" width="100%" textAlign="center"/>
+				</s:Group>
+			</s:HGroup>
 			
 			<s:Spacer height="100%"/>
 			
