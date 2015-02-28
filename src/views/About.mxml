@@ -102,6 +102,7 @@
 								<s:VGroup width="100%" height="100%" paddingLeft="30">
 									<s:Label id="labelAboutFontTitle" text="Font" styleName="title" width="100%"/>
 									<s:Label id="labelAboutFontDesc" text="\u00A9 2014 Mozilla and Telefonica S.A. Licenced under the SIL Open Font Licence." styleName="desc" width="100%"/>
+									<s:Label id="labelFontLicence" text="Full licence." styleName="desc" color="#0000FF" click="navigateToURL(new URLRequest('http://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web'));"/>
 								</s:VGroup>
 							</s:HGroup>
 						</s:Group>
@@ -124,7 +125,8 @@
 							<s:HGroup width="100%" height="100%" paddingRight="10" paddingLeft="10" paddingTop="10" paddingBottom="10" verticalAlign="middle">
 								<s:VGroup width="100%" height="100%" paddingLeft="30">
 									<s:Label id="labelAboutIconsTitle" text="Icons" styleName="title" width="100%"/>
-									<s:Label id="labelAboutIconsDesc" text="\u00A9 Google. Licenced under the Creative Commons Attribution-ShareAlike 4.0 International Licence." styleName="desc" width="100%"/>
+									<s:Label id="labelAboutIconsDesc" text="\u00A9 Google. Licenced under the Creative Commons Attribution-ShareAlike 4.0 International Licence. Some icons modified." styleName="desc" width="100%"/>
+									<s:Label id="labelIconsLicence" text="Full licence." styleName="desc" color="#0000FF" click="navigateToURL(new URLRequest('https://creativecommons.org/licenses/by-sa/4.0/legalcode'));"/>
 								</s:VGroup>
 							</s:HGroup>
 						</s:Group>
