@@ -58,11 +58,13 @@
 				var count:int = 0;
 				
 				var pName:String = "";
+				var pSource:String = "";
 				var pImage:String = "";
 				var pURL:String = "";
 				
 				for (var item:String in fileContents.vid) {
 					pName = fileContents.vid.@name[item];
+					pSource = fileContents.vid.@courtesySrc[item];
 					pImage = fileContents.vid.@imageSrc[item];
 					pURL = fileContents.vid.@fullURL[item];
 					
@@ -75,6 +77,7 @@
 					//var vGroupPictures:VGroup = new VGroup();
 					//var vGroupInfo:VGroup = new VGroup();
 					var hGroupMain:HGroup = new HGroup();
+					var vGroupInfo:VGroup = new VGroup();
 					var imageOH:Image = new Image();
 					var bottomSpacer:Spacer = new Spacer();
 					
@@ -108,9 +111,17 @@
 					name.setStyle("styleName", "title");
 					name.toolTip = pURL;
 					name.setStyle("paddingTop", "10");
-					name.percentHeight = 100;
+					//name.percentHeight = 100;
 					name.setStyle("verticalAlign", "middle");
 					name.setStyle("textAlign", "center");
+					
+					source.text = pSource;
+					source.percentWidth = 100;
+					source.setStyle("styleName", "desc");
+					source.setStyle("paddingTop", "10");
+					//source.percentHeight = 100;
+					source.setStyle("verticalAlign", "middle");
+					source.setStyle("textAlign", "center");
 					
 					imageOH.source = pImage;
 					imageOH.width = 200;
@@ -118,7 +129,13 @@
 					imageOH.toolTip = pURL;
 					
 					hGroupMain.addElement(imageOH);
-					hGroupMain.addElement(name);
+					
+					vGroupInfo.percentWidth = 100;
+					
+					vGroupInfo.addElement(name);
+					vGroupInfo.addElement(source);
+					
+					hGroupMain.addElement(vGroupInfo);
 					
 					groupPicturesCard.addElement(hGroupMain);
 					
